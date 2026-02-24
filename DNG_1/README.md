@@ -15,4 +15,4 @@ Contents of This Repository:-
 
 3)Enhanced output images
 
-4)Metric calculation references
+4)Metric calculation reference
