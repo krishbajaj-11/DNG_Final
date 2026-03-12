@@ -5,7 +5,7 @@ This repository presents an image enhancement workflow applied to DNG (RAW) imag
 
 The repository includes all materials used in this work, such as source code, sample input images, enhanced output images, and metric-related documentation.
 
-To keep the repository lightweight, only a small set of representative images is uploaded while still demonstrating the complete process.
+To keep the repository lightweight, only a small set of representative images is uploaded while still demonstrating the complete process
 
 Contents of This Repository:-
 
