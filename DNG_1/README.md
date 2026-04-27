@@ -14,5 +14,4 @@ Contents of This Repository:-
 2)Sample DNG input images
 
 3)Enhanced output images
-
 4)Metric calculation reference
