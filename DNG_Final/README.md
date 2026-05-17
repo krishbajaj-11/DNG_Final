@@ -36,6 +36,22 @@ anti/
 └── requirements.txt
 ```
 
+## 📥 Model Weights Download
+
+> The trained model weights are too large for GitHub (~400 MB). Download from Google Drive:
+
+**[⬇️ Download checkpoints_v3/ from Google Drive](https://drive.google.com/drive/folders/1pYAL_ZNN6ZpWFp5wILM1SqlwedycpdEM?usp=sharing)**
+
+After downloading, place the files so your structure looks like:
+```
+DNG_Final/
+└── checkpoints_v3/
+    ├── best_model.pt    # PyTorch checkpoint (98.53% accuracy)
+    └── model.onnx       # ONNX export (205ms CPU latency)
+```
+
+---
+
 ## ⚙️ Setup
 
 ### 1. Install dependencies
