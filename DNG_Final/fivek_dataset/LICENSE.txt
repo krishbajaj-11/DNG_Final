@@ -1,0 +1,2 @@
+LicenseAdobe.txt applies to files listed in filesAdobe.txt
+LicenseAdobeMIT.txt applies to files listed in filesAdobeMIT.txt

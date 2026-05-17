@@ -1,0 +1,17 @@
+services:
+  dng-classifier:
+    build: .
+    container_name: dng-detail-classifier
+    ports:
+      - "8000:8000"        # http://localhost:8000
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./checkpoints_v3:/app/checkpoints_v3  # mount model so you can update without rebuild
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

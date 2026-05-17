@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DNG Detail Level Classifier</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #12121a;
+      --card:      #1a1a28;
+      --border:    #2a2a40;
+      --accent:    #1a1a2e;
+      --accent2:   #00b4d8;
+      --text:      #e8e8f0;
+      --muted:     #8888aa;
+      --success:   #22c55e;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --radius:    12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Header --- */
+    header {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .samsung-logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #fff;
+    }
+    header h1 {
+      font-size: 16px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.75);
+      border-left: 1px solid rgba(255,255,255,0.3);
+      padding-left: 20px;
+      margin-left: 4px;
+    }
+    .status-pill {
+      margin-left: auto;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(34,197,94,0.15);
+      color: var(--success);
+      border: 1px solid rgba(34,197,94,0.3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-pill::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* --- Main layout --- */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+      padding: 28px 40px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* --- Upload panel --- */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    #drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface);
+      position: relative;
+    }
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--accent2);
+      background: rgba(0,180,216,0.05);
+    }
+    #drop-zone svg { width: 48px; height: 48px; color: var(--accent2); margin-bottom: 14px; }
+    #drop-zone p   { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    #drop-zone strong { color: var(--text); }
+    #file-input { display: none; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #1a35c4);
+      color: #fff;
+      width: 100%;
+      margin-top: 16px;
+      justify-content: center;
+      font-size: 15px;
+      padding: 14px;
+    }
+    .btn-primary:hover   { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(20,40,160,0.5); }
+    .btn-primary:active  { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* preview */
+    #preview-wrap { margin-top: 20px; display: none; }
+    #preview-wrap img {
+      width: 100%; border-radius: 8px; border: 1px solid var(--border);
+      max-height: 220px; object-fit: cover;
+    }
+    .file-info { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+    /* spinner */
+    .spinner {
+      display: none;
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Results panel --- */
+    .results-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* level meter */
+    .level-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .level-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(20,40,160,0.08), rgba(0,180,216,0.04));
+      pointer-events: none;
+    }
+    .level-header { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 20px; }
+    .level-number {
+      font-size: 72px; font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent2), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .level-label { font-size: 14px; color: var(--muted); padding-bottom: 10px; }
+    .confidence-tag {
+      margin-left: auto;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(0,180,216,0.12);
+      color: var(--accent2);
+      border: 1px solid rgba(0,180,216,0.25);
+    }
+
+    /* bar meter */
+    .bar-track {
+      height: 10px;
+      background: var(--surface);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* probability bars */
+    .prob-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .prob-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 52px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .prob-label { font-size: 12px; color: var(--muted); }
+    .prob-bar-track { height: 8px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+    .prob-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+    .prob-pct { font-size: 12px; color: var(--muted); text-align: right; }
+
+    /* metrics row */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .metric-value { font-size: 26px; font-weight: 700; color: var(--text); }
+    .metric-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: var(--muted);
+      gap: 12px;
+    }
+    .empty-state svg { width: 64px; height: 64px; opacity: 0.3; }
+    .empty-state p { font-size: 14px; }
+
+    /* error */
+    .error-banner {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      padding: 14px 18px;
+      color: #fca5a5;
+      font-size: 13px;
+      display: none;
+      margin-top: 12px;
+    }
+
+    /* KPI badges */
+    .kpi-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .kpi-badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .kpi-met   { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .kpi-unmet { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 style="border-left:none; padding-left:0; font-size:18px; font-weight:700; color:#fff;">DNG Detail Level Classifier</h1>
+  <div class="status-pill" id="api-status">API Online</div>
+</header>
+
+<main>
+  <!-- Upload panel -->
+  <div class="panel">
+    <div class="panel-title">Upload Image</div>
+
+    <div id="drop-zone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+      </svg>
+      <p><strong>Drop a DNG, JPEG, or PNG here</strong><br/>or click to browse</p>
+      <input type="file" id="file-input" accept=".dng,.raw,.nef,.cr2,.arw,.jpg,.jpeg,.png" />
+    </div>
+
+    <div id="preview-wrap">
+      <img id="preview-img" alt="Preview" />
+      <div class="file-info" id="file-info"></div>
+    </div>
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <button class="btn btn-primary" id="classify-btn" disabled>
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Classify Image</span>
+    </button>
+  </div>
+
+  <!-- Results panel -->
+  <div class="results-grid" id="results-area">
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <path stroke-linecap="round" d="M21 15l-5-5L5 21"/>
+      </svg>
+      <p>Upload an image to see the detail level classification</p>
+    </div>
+  </div>
+</main>
+
+<script>
+const API_BASE = "http://localhost:8000";
+
+const dropZone     = document.getElementById("drop-zone");
+const fileInput    = document.getElementById("file-input");
+const classifyBtn  = document.getElementById("classify-btn");
+const spinner      = document.getElementById("spinner");
+const btnText      = document.getElementById("btn-text");
+const previewWrap  = document.getElementById("preview-wrap");
+const previewImg   = document.getElementById("preview-img");
+const fileInfoEl   = document.getElementById("file-info");
+const resultsArea  = document.getElementById("results-area");
+const errorBanner  = document.getElementById("error-banner");
+const apiStatus    = document.getElementById("api-status");
+
+let selectedFile = null;
+
+// Check API health
+fetch(`${API_BASE}/health`)
+  .then(r => r.json())
+  .then(d => {
+    apiStatus.textContent = d.model_loaded ? "Model Ready" : "API Online (No Model)";
+  })
+  .catch(() => {
+    apiStatus.textContent = "API Offline";
+    apiStatus.style.background = "rgba(239,68,68,0.15)";
+    apiStatus.style.color = "#fca5a5";
+    apiStatus.style.borderColor = "rgba(239,68,68,0.3)";
+  });
+
+// File selection
+dropZone.addEventListener("click",      () => fileInput.click());
+dropZone.addEventListener("dragover",   e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+dropZone.addEventListener("dragleave",  () => dropZone.classList.remove("drag-over"));
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("drag-over");
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener("change", () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  selectedFile = file;
+  errorBanner.style.display = "none";
+
+  const url = URL.createObjectURL(file);
+  previewImg.src = url;
+  previewWrap.style.display = "block";
+  fileInfoEl.textContent = `${file.name}  •  ${(file.size / 1024).toFixed(1)} KB`;
+  classifyBtn.disabled = false;
+}
+
+// Classification
+classifyBtn.addEventListener("click", async () => {
+  if (!selectedFile) return;
+  setLoading(true);
+  errorBanner.style.display = "none";
+
+  const form = new FormData();
+  form.append("file", selectedFile);
+
+  try {
+    const res  = await fetch(`${API_BASE}/classify`, { method: "POST", body: form });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Classification failed");
+    }
+    const data = await res.json();
+    renderResults(data);
+  } catch (err) {
+    errorBanner.textContent = err.message;
+    errorBanner.style.display = "block";
+  } finally {
+    setLoading(false);
+  }
+});
+
+function setLoading(on) {
+  classifyBtn.disabled = on;
+  spinner.style.display = on ? "block" : "none";
+  btnText.textContent   = on ? "Classifying…" : "Classify Image";
+}
+
+// Level → color (L5=red-ish .. L10=green)
+function levelColor(level) {
+  const t = (level - 5) / 5;  // L5=0, L10=1
+  const r = Math.round(239 + (34 - 239) * t);
+  const g = Math.round(68  + (197 - 68) * t);
+  const b = Math.round(68  + (94 - 68) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function renderResults(d) {
+  const level    = d.detail_level;          // L5–L10
+  const pct      = ((level - 5) / 5 * 100).toFixed(0);  // 0% at L5, 100% at L10
+  const conf     = (d.confidence * 100).toFixed(1);
+  const timeMs   = d.processing_time_ms;
+  const sharp    = d.sharpness_score;
+  const kpiTime  = timeMs <= 1500;
+  const kpiSharp = sharp >= 0.15;
+
+  resultsArea.innerHTML = `
+    <div class="level-card">
+      <div class="panel-title">Classification Result</div>
+      <div class="level-header">
+        <div class="level-number">L${level}</div>
+        <div class="level-label">/ L10<br/>Detail Level</div>
+        <div class="confidence-tag">${conf}% confidence</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="main-bar" style="width:0%"></div>
+      </div>
+      <div class="bar-labels"><span>L5 (Base)</span><span>L10 (Max Enhanced)</span></div>
+      <div class="kpi-row" style="margin-top:16px">
+        <div class="kpi-badge ${kpiTime  ? 'kpi-met' : 'kpi-unmet'}">${timeMs.toFixed(0)}ms ${kpiTime ? '✓' : '!'} (KPI ≤1500ms)</div>
+        <div class="kpi-badge ${kpiSharp ? 'kpi-met' : 'kpi-unmet'}">Sharpness ${sharp} ${kpiSharp ? '✓' : '!'}</div>
+      </div>
+    </div>
+
+    <div class="prob-card">
+      <div class="panel-title">Level Probability Distribution</div>
+      ${Object.entries(d.level_probabilities).map(([lv, p]) => {
+        const pPct = (p * 100).toFixed(1);
+        const col  = levelColor(parseInt(lv));
+        return `<div class="prob-row">
+          <div class="prob-label">L${lv}</div>
+          <div class="prob-bar-track">
+            <div class="prob-bar-fill" data-w="${pPct}" style="width:0%; background:${col}"></div>
+          </div>
+          <div class="prob-pct">${pPct}%</div>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-value">L${level}</div>
+        <div class="metric-label">Detail Level</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">${timeMs.toFixed(0)}ms</div>
+        <div class="metric-label">Processing Time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">${sharp}</div>
+        <div class="metric-label">Sharpness Score</div>
+      </div>
+    </div>
+  `;
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.getElementById("main-bar").style.width = pct + "%";
+    document.querySelectorAll(".prob-bar-fill").forEach(el => {
+      el.style.width = el.dataset.w + "%";
+    });
+  });
+}
+</script>
+</body>
+</html>

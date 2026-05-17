@@ -1,0 +1,32 @@
+# Exclude large training data from Docker image
+fivek_dataset/
+data/fivek_prepared/
+data/fivek_384/
+data/*.txt
+data/build_log*.txt
+data/train_log*.txt
+
+# Exclude old checkpoints
+checkpoints/
+checkpoints_v2/
+checkpoints_v3_test/
+
+# Exclude Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Exclude development files
+.git/
+.gitignore
+*.md
+export_onnx.py
+validate_kpi4.py
+samsung_dng_project_plan.md
+
+# Exclude notebook and test files
+*.ipynb
+tests/
