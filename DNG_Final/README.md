@@ -6,8 +6,8 @@ A machine learning pipeline that classifies RAW DNG images into 6 enhancement le
 
 | KPI | Target | Achieved |
 |-----|--------|----------|
-| Test Accuracy | ≥ 92% | **98.53%** ✅ |
-| Cohen's Kappa | ≥ 0.85 | **0.9968** ✅ |
+| Test Accuracy | ≥ 92% | **96.53%** ✅ |
+| Cohen's Kappa | ≥ 0.85 | **0.9768** ✅ |
 | Inference Latency (ONNX CPU) | ≤ 1500ms | **205ms** ✅ |
 
 ## 🗂️ Project Structure
