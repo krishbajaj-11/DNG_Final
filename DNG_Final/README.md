@@ -116,6 +116,32 @@ python export_onnx.py
 | L9 | + Retinex tonal correction |
 | L10 | Full stack — maximum detail enhancement |
 
+## 🗺️ System Architecture Diagram
+
+![System Architecture](docs/architecture/system_architecture.png)
+
+---
+
+## 🧪 Quick Inference Demo
+
+Run on a **single image** (minimum setup):
+```bash
+# 1. Download model weights (see above) → place in checkpoints_v3/
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run inference
+python inference.py --image path/to/your/image.jpg
+
+# 4. Run on a folder of images
+python inference.py --folder path/to/images/ --save_csv results.csv
+
+# 5. Run on a DNG file
+python inference.py --image photo.dng --device cuda
+```
+
+---
+
 ## 🏗️ Architecture
 
 - **Backbone:** ConvNeXt-Small (49.7M params, pretrained on ImageNet-1K)
