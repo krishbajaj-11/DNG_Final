@@ -1,0 +1,76 @@
+# ============================================================
+#  Samsung DNG Detail Classifier — .gitignore
+# ============================================================
+
+# ------------------------------------------------------------
+# Model weights & ONNX exports (too large for GitHub, ~400 MB)
+# ------------------------------------------------------------
+checkpoints_v3/
+DNG_Final/checkpoints_v3/
+
+# ------------------------------------------------------------
+# Raw FiveK dataset (DNG photos + Lightroom catalog)
+# ------------------------------------------------------------
+fivek_dataset/raw_photos/
+fivek_dataset/fivek.lrcat
+fivek_dataset/fivek Previews.lrdata/
+DNG_Final/fivek_dataset/raw_photos/
+DNG_Final/fivek_dataset/fivek.lrcat
+DNG_Final/fivek_dataset/fivek Previews.lrdata/
+
+# ------------------------------------------------------------
+# Generated / processed image data (reproducible via scripts)
+# ------------------------------------------------------------
+data/fivek_384/level_*/
+data/fivek_prepared/
+DNG_Final/data/fivek_384/level_*/
+DNG_Final/data/fivek_prepared/
+
+# ------------------------------------------------------------
+# Build & training logs
+# ------------------------------------------------------------
+data/build_log.txt
+data/build_log_384.txt
+data/train_log.txt
+data/train_log_v2.txt
+data/train_log_v3.txt
+data/train_log_v3_test.txt
+DNG_Final/data/build_log.txt
+DNG_Final/data/build_log_384.txt
+DNG_Final/data/train_log.txt
+DNG_Final/data/train_log_v2.txt
+DNG_Final/data/train_log_v3.txt
+DNG_Final/data/train_log_v3_test.txt
+
+# ------------------------------------------------------------
+# Python cache
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# ------------------------------------------------------------
+# Virtual environments
+# ------------------------------------------------------------
+venv/
+.venv/
+env/
+
+# ------------------------------------------------------------
+# OS & editor artifacts
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ------------------------------------------------------------
+# Large binary / model files
+# ------------------------------------------------------------
+*.pt
+*.pth
+*.onnx
+*.onnx.data
+*.lrcat

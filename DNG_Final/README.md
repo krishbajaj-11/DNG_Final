@@ -13,26 +13,36 @@ A machine learning pipeline that classifies RAW DNG images into 6 enhancement le
 ## 🗂️ Project Structure
 
 ```
-anti/
-├── api/                    # FastAPI REST backend
+DNG_Final/
+├── api/                         # FastAPI REST backend
 │   └── main.py
-├── checkpoints_v3/         # Trained model weights
-│   ├── best_model.pt       # PyTorch checkpoint (98.53% acc)
-│   └── model.onnx          # ONNX export (205ms CPU latency)
+├── checkpoints_v3/              # Trained model weights (download from Google Drive)
+│   ├── best_model.pt            # PyTorch checkpoint (98.53% acc)
+│   └── model.onnx               # ONNX export (205ms CPU latency)
 ├── dashboard/
-│   └── index.html          # Web UI dashboard
+│   └── index.html               # Web UI dashboard
 ├── data/
 │   ├── build_fivek_dataset.py   # GPU-accelerated dataset builder
 │   ├── dataset.py               # PyTorch DataLoader
-│   └── fivek_prepared/          # 30,000 training samples
+│   └── fivek_384/               # Dataset labels JSON
+├── docs/
+│   ├── architecture/
+│   │   └── system_architecture.png   # System architecture diagram
+│   ├── monthly_reports/         # Monthly connect reports
+│   ├── weekly_reports/          # Weekly/biweekly progress reports
+│   └── end_review_ppt/          # End review presentation
 ├── model/
-│   ├── classifier.py       # ConvNeXt-Small + ordinal head
-│   └── train.py            # Training script (v3)
+│   ├── classifier.py            # ConvNeXt-Small + ordinal head
+│   └── train.py                 # Training script (v3)
 ├── pipeline/
-│   └── dng_processor.py    # LibRAW DNG decoder
+│   └── dng_processor.py         # LibRAW DNG decoder
 ├── utils/
-│   └── metrics.py          # Image quality metrics (IQA)
-├── export_onnx.py          # ONNX export + latency benchmark
+│   └── metrics.py               # Image quality metrics (IQA)
+├── inference.py                 # ⭐ Standalone demo/inference script
+├── export_onnx.py               # ONNX export + latency benchmark
+├── validate_kpi4.py             # KPI validation script
+├── Dockerfile                   # Docker container definition
+├── docker-compose.yml           # Multi-service orchestration
 └── requirements.txt
 ```
 
